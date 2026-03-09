@@ -651,3 +651,4 @@ crontab -e
 # Add — runs every Sunday at 02:00, logs to file
 0 2 * * 0 /path/to/podman-dev-stacks/scripts/update-images.sh --prune --log ~/podman-update.log
 ```
+# podman-dev-stacks
