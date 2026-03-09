@@ -1,0 +1,64 @@
+services:
+
+  gitea:
+    image: docker.io/gitea/gitea:latest
+    container_name: ${COMPOSE_PROJECT_NAME:-devops}-gitea
+    ports:
+      - "3000:3000"     # Web UI — http://localhost:3000
+      - "222:22"        # SSH git access
+    volumes:
+      - gitea-data:/data
+    environment:
+      - GITEA__database__DB_TYPE=sqlite3
+      - GITEA__server__ROOT_URL=http://localhost:3000
+    restart: unless-stopped
+
+  jenkins:
+    image: docker.io/jenkins/jenkins:lts
+    container_name: ${COMPOSE_PROJECT_NAME:-devops}-jenkins
+    ports:
+      - "8080:8080"     # Web UI — http://localhost:8080
+      - "50000:50000"   # Agent port
+    volumes:
+      - jenkins-data:/var/jenkins_home
+    restart: unless-stopped
+
+  sonarqube:
+    image: docker.io/sonarqube:community
+    container_name: ${COMPOSE_PROJECT_NAME:-devops}-sonarqube
+    ports:
+      - "9000:9000"     # Web UI — http://localhost:9000
+    environment:
+      - SONAR_ES_BOOTSTRAP_CHECKS_DISABLE=true
+    volumes:
+      - sonarqube-data:/opt/sonarqube/data
+      - sonarqube-logs:/opt/sonarqube/logs
+      - sonarqube-extensions:/opt/sonarqube/extensions
+    restart: unless-stopped
+
+  portainer:
+    image: docker.io/portainer/portainer-ce:latest
+    container_name: ${COMPOSE_PROJECT_NAME:-devops}-portainer
+    ports:
+      - "9443:9443"     # Web UI — https://localhost:9443
+    volumes:
+      - portainer-data:/data
+      - /run/user/1000/podman/podman.sock:/var/run/docker.sock:Z
+    restart: unless-stopped
+
+volumes:
+  gitea-data:
+  jenkins-data:
+  sonarqube-data:
+  sonarqube-logs:
+  sonarqube-extensions:
+  portainer-data:
+
+# ── Access ────────────────────────────────────────────────────────────────────
+# Gitea      → http://localhost:3000  (set up on first visit)
+# Jenkins    → http://localhost:8080  (initial password in logs)
+# SonarQube  → http://localhost:9000  (admin / admin)
+# Portainer  → https://localhost:9443 (set up on first visit)
+#
+# Get Jenkins initial admin password:
+#   podman logs devops-jenkins | grep -A 3 "initial admin password"

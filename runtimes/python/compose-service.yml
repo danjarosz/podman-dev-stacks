@@ -1,0 +1,14 @@
+
+  app:
+    image: docker.io/python:3.13-slim
+    container_name: ${COMPOSE_PROJECT_NAME:-app}-python
+    working_dir: /app
+    volumes:
+      - .:/app:Z
+      - pip-cache:/root/.cache/pip
+    ports:
+      - "${APP_PORT:-8000}:8000"
+    environment:
+      - PYTHONUNBUFFERED=1
+      - PYTHONDONTWRITEBYTECODE=1
+    command: python main.py
